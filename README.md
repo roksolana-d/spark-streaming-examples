@@ -14,7 +14,11 @@ The same flow from Twitter to Kafka and Spark. ELK stack is not used, the data i
 - Windowed aggregations (in process)
 - Watermarking
 - Metrics gathering
-- ELK stack introduction
 
+Future plans:
+- Upgrade Spark to 2.4.0
+- Replace Kafka producer String format with JSON format for the legacy Spark streaming case
+- ELK stack introduction for Spark structured streaming case
+- Deploy the project on Kubernetes
 
-Spark 2.3.1 is used for now, but should be replaced with 2.4.0 version in the future. Scala version is current release (2.12.8)
+Spark 2.3.1 is used for now. Scala version is current release (2.12.8)
