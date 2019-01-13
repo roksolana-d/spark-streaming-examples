@@ -1,7 +1,7 @@
 *.class
 *.log
 .idea
-.idea/*.xml
+.idea/vcs.xml
 target
 project
 twitter_configs/*.conf
