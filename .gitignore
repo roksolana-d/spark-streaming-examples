@@ -1,5 +1,6 @@
 *.class
 *.log
 .idea
+.idea/*.xml
 target
 project
