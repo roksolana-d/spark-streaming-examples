@@ -1,0 +1,1 @@
+scala, kafka, cassandra, solr, apachespark, fastdata, bigdata, machinelearning, datascience, deeplearnig, ai
