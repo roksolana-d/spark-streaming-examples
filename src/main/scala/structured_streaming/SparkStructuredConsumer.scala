@@ -1,5 +1,8 @@
 package structured_streaming
 
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+
 import org.apache.spark.SparkConf
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.from_json
@@ -36,12 +39,11 @@ object SparkStructuredConsumer {
       .option("subscribe", topic)
       .load()
 
-    println("Processed")
-
     val tweetsStructured = tweetsStream
       .selectExpr("CAST(value AS STRING)")
       .as[String]
       .select(from_json($"value", generalFunctions.buildTweetDataStruct()).as("tweet"))
+
 
     val userFollowersCount = "tweet.user.followers_count"
     val userLanguage = "tweet.user.lang"
@@ -58,23 +60,30 @@ object SparkStructuredConsumer {
     val minFollowersCount = generalFunctions.minAndMaxColumnValues(tweetsStructured, userFollowersCount)
 
     import sparkSession.implicits._
+    import org.apache.spark.sql.functions._
+
+    val parseDate = udf((timeString: String) => {
+      val dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy")
+      val parsedDate = dateFormat.parse(timeString)
+      val timestamp = new Timestamp(parsedDate.getTime)
+      timestamp
+    })
 
     val tweetTimestamp = "tweet.timestamp_ms"
-    val updatedTweets = tweetsStructured.withColumn("timestamp", tweetsStructured.col(tweetTimestamp).cast(TimestampType))
-      .drop(tweetTimestamp)
-      .withColumnRenamed("timestamp", tweetTimestamp)
+    val updatedTweets = tweetsStructured.withColumn("timestamp_ms",  from_unixtime($"tweet.timestamp_ms" / 1000))
+ updatedTweets.printSchema()
 
-    val windowedAgeggation = tweetsStructured.groupBy(
-      window(updatedTweets.col("tweet.timestamp_ms"), "3 minutes", "2 minutes"), updatedTweets.col(userLanguage)
-    ).count()
+    val res = updatedTweets.groupBy(window(updatedTweets.col("timestamp_ms"), "3 minutes", "2 minutes"),
+      updatedTweets.col(userLanguage))
+      .count()
 
     val outputModeAppend = "append"
     val outputModeComplete = "complete"
     val outputFormat = "console"
 
-    val outputExample = updatedTweets
+    val outputExample = res
       .writeStream
-      .outputMode(outputModeAppend)
+      .outputMode(outputModeComplete)
       .format(outputFormat)
       .start()
 
