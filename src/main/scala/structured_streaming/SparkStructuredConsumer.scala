@@ -70,18 +70,25 @@ object SparkStructuredConsumer {
     })
 
     val tweetTimestamp = "tweet.timestamp_ms"
-    val updatedTweets = tweetsStructured.withColumn("timestamp_ms",  from_unixtime($"tweet.timestamp_ms" / 1000))
- updatedTweets.printSchema()
+    val updatedTweets = tweetsStructured.withColumn("timestamp_ms",
+      from_unixtime($"tweet.timestamp_ms" / 1000)
+        .cast("timestamp"))
 
-    val windowedAggregation = updatedTweets.groupBy(window(updatedTweets.col("timestamp_ms"), "7 minutes", "3 minutes"),
+
+    val windowedAggregation = updatedTweets
+      .withWatermark("timestamp_ms", "7 minutes")
+      .groupBy(window(updatedTweets
+        .col("timestamp_ms"), "7 minutes", "3 minutes"),
       updatedTweets.col(userLanguage))
       .count()
 
-//    val watermarkingAggregation = updatedTweets
-////      .withWatermark("tweet.timestamp_ms", "7 minutes")
-//      .groupBy(window(updatedTweets.col("timestamp_ms"), "7 minutes", "3 minutes"),
-//      updatedTweets.col(userLanguage))
-//      .count()
+    val watermarkingAggregation = updatedTweets
+      .withWatermark("timestamp_ms", "7 minutes")
+      .groupBy(window(updatedTweets
+        .col("timestamp_ms"), "7 minutes", "3 minutes"),
+        updatedTweets.col(userLanguage))
+      .count()
+
 
     val outputModeAppend = "append"
     val outputModeComplete = "complete"
