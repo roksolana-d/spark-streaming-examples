@@ -3,6 +3,9 @@ package utils
 import org.apache.spark.sql.functions.{max, min}
 import org.apache.spark.sql.types.{ArrayType, DataTypes, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+
 
 class SparkSqlFunctionsTemplates {
 

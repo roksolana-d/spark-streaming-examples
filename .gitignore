@@ -1,6 +1,7 @@
 *.class
 *.log
 .*
+*.sc
 .idea
 .idea/vcs.xml
 target
