@@ -11,14 +11,16 @@ Replace String with JSON format
 2) Structured streaming
 The same flow from Twitter to Kafka and Spark. ELK stack is not used, the data is displayed on the console format (for now). Fields to be discovered:
 - Filtering and aggregations on data (implemented)
-- Windowed aggregations (in process)
-- Watermarking
+- Windowed aggregations (implemented with count, other aggregations are in process)
+- Watermarking (implemented)
+- Data deduplication (in process)
 - Metrics gathering
 
 Future plans:
 - Upgrade Spark to 2.4.0
+- Multiple streams joins
 - Replace Kafka producer String format with JSON format for the legacy Spark streaming case
 - ELK stack introduction for Spark structured streaming case
-- Deploy the project on Kubernetes
+- Deploy the project with Kubernetes
 
 Spark 2.3.1 is used for now. Scala version is current release (2.12.8)
