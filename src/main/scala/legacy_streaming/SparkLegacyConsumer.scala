@@ -7,9 +7,12 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.streaming.kafka010.{ConsumerStrategies, KafkaUtils, LocationStrategies}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.elasticsearch.spark._
+import structured_streaming.SparkStructuredConsumer.generalFunctions
+import utils.SparkSqlFunctionsTemplates
 
 object SparkLegacyConsumer {
+
+  val generalFunctions = new SparkSqlFunctionsTemplates
 
   def formatDate(date: String) = {
     val initialDate = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy").parse(date)
@@ -80,16 +83,27 @@ object SparkLegacyConsumer {
     val messages = streamingContext.union(lines)
 
     val values = messages
-      .map(record => record.value().toString)
+      .map(rec => rec.value())
     values.print()
 
     val es_index = "tweets-time/output"
 
-    val wordsArrays = values.map(_.split(" !& "))
+    import sparkSession.implicits._
+    import org.elasticsearch.spark.sql
 
-    wordsArrays.foreachRDD(rdd => rdd.flatMap(
-      record => convertToTweetMap( record )
-    ).saveToEs( es_index))
+    val schema = generalFunctions.buildTweetDataStruct()
+
+   values.foreachRDD(rdd => {
+     val dataFrame = sparkSession.read
+       .schema(schema)
+       .json(rdd)
+     generalFunctions.filterContainsStringValues(dataFrame, "user.lang", "en").show()
+     generalFunctions.countColumnValues(dataFrame, "user.followers_count").show()
+   })
+
+    //    wordsArrays.foreachRDD(rdd => rdd.flatMap(
+    //      record => convertToTweetMap(record)
+    //    ).saveToEs( es_index))
 
 
     streamingContext.start()
