@@ -4,7 +4,7 @@ version := "0.1"
 
 scalaVersion := "2.11.8"
 
-val sparkVersion = "2.3.1"
+val sparkVersion = "2.4.0"
 
 dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % "2.9.6"
 dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.6"
