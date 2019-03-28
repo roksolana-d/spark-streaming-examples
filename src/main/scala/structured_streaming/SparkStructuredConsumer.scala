@@ -6,8 +6,9 @@ import java.text.SimpleDateFormat
 import org.apache.spark.SparkConf
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.from_json
-import org.apache.spark.sql.types.TimestampType
+import org.apache.spark.sql.types.{StringType, TimestampType}
 import org.apache.spark.sql.functions.window
+import org.apache.spark.sql.streaming.Trigger
 import utils.SparkSqlFunctionsTemplates
 
 object SparkStructuredConsumer {
@@ -40,8 +41,7 @@ object SparkStructuredConsumer {
       .load()
 
     val tweetsStructured = tweetsStream
-      .selectExpr("CAST(value AS STRING)")
-      .as[String]
+      .select(tweetsStream("value").cast(StringType))
       .select(from_json($"value", generalFunctions.buildTweetDataStruct()).as("tweet"))
 
 
@@ -76,7 +76,6 @@ object SparkStructuredConsumer {
 
 
     val windowedAggregation = updatedTweets
-      .withWatermark("timestamp_ms", "7 minutes")
       .groupBy(window(updatedTweets
         .col("timestamp_ms"), "7 minutes", "3 minutes"),
       updatedTweets.col(userLanguage))

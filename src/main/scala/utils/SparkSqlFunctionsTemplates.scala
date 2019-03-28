@@ -16,6 +16,7 @@ class SparkSqlFunctionsTemplates {
     inputDataFrame
       .groupBy(colName)
       .count()
+      .orderBy()
   }
 
   def filterContainsStringValues(inputDataFrame: DataFrame, colName: String, condition: String) = {
