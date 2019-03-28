@@ -84,26 +84,31 @@ object SparkLegacyConsumer {
 
     val values = messages
       .map(rec => rec.value())
-    values.print()
+//    values.print()
 
     val es_index = "tweets-time/output"
 
     import sparkSession.implicits._
     import org.elasticsearch.spark.sql
-
     val schema = generalFunctions.buildTweetDataStruct()
 
-   values.foreachRDD(rdd => {
+    val result = values.filter(res => res.contains("Artificial Intelligence"))
+    result.print()
+
+    values.foreachRDD(rdd => {
+      rdd.filter(_.contains("big data"))
+      rdd.foreach(println(_))
      val dataFrame = sparkSession.read
        .schema(schema)
        .json(rdd)
-     generalFunctions.filterContainsStringValues(dataFrame, "user.lang", "en").show()
-     generalFunctions.countColumnValues(dataFrame, "user.followers_count").show()
-   })
+//     generalFunctions.filterContainsStringValues(dataFrame, "user.lang", "en").show()
+//     generalFunctions.countColumnValues(dataFrame, "user.followers_count").show()
+    })
 
     //    wordsArrays.foreachRDD(rdd => rdd.flatMap(
     //      record => convertToTweetMap(record)
     //    ).saveToEs( es_index))
+
 
 
     streamingContext.start()
